@@ -17,8 +17,6 @@
 
 @property (nonatomic, strong)  UITableView *tableView;
 
-@property (nonatomic,strong)   UIRefreshControl *refreshControl;
-
 @property (nonatomic,strong)   NIMInputView *sessionInputView;
 
 @property (nonatomic, strong)  NIMSession *session;
@@ -46,9 +44,24 @@
 
 #pragma mark - 界面
 /**
- *  会话页导航栏按钮
+ *  会话页导航栏标题
  */
 - (NSString *)sessionTitle;
+
+/**
+ *  会话页导航栏子标题
+ */
+- (NSString *)sessionSubTitle;
+
+/**
+ *  刷新导航栏标题
+ */
+- (void)refreshSessionTitle:(NSString *)title;
+
+/**
+ *  刷新导航子栏标题
+ */
+- (void)refreshSessionSubTitle:(NSString *)title;
 
 /**
  *  会话页长按消息可以弹出的菜单

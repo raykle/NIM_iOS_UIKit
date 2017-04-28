@@ -37,6 +37,7 @@
         }
         case NIMNotificationTypeNetCall:{
             M80AttributedLabel *label = [[M80AttributedLabel alloc] initWithFrame:CGRectZero];
+            label.autoDetectLinks = NO;
             label.font = [UIFont systemFontOfSize:NIMKit_Message_Font_Size];
             NSString *text = [NIMKitUtil messageTipContent:message];
             [label nim_setText:text];

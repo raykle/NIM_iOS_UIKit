@@ -65,10 +65,13 @@
     NIMSessionLayoutImpl *layout         = [[NIMSessionLayoutImpl alloc] initWithSession:session tableView:tableView config:sessionConfig];
     
     
+    
     _interactor                          = [[NIMSessionInteractorImpl alloc] initWithSession:session config:sessionConfig];
     _interactor.delegate                 = vc;
     _interactor.dataSource               = datasource;
     _interactor.layout                   = layout;
+    
+    [layout setDelegate:_interactor];
     
     _tableAdapter = [[NIMSessionTableAdapter alloc] init];
     _tableAdapter.interactor = _interactor;

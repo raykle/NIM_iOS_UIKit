@@ -46,6 +46,8 @@
 
 - (NIMMessageModel *)makeMessageModel:(NIMMessage *)message;
 
+- (BOOL)shouldHandleReceipt;
+
 - (void)checkReceipt;
 
 - (void)resetMessages;

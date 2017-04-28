@@ -20,11 +20,15 @@
 
 @property (nonatomic,strong)  UITableView *tableView;
 
+@property (nonatomic,strong)  UIRefreshControl *refreshControl;
+
 @property (nonatomic,strong)  NIMSession  *session;
 
 @property (nonatomic,assign)  CGRect viewRect;
 
 @property (nonatomic,strong)  id<NIMSessionConfig> sessionConfig;
+
+@property (nonatomic,weak)    id<NIMSessionLayoutDelegate> delegate;
 
 @end
 
@@ -40,6 +44,8 @@
         _sessionConfig = sessionConfig;
         _session       = session;
         _inserts       = [[NSMutableArray alloc] init];
+        
+        [self setupRefreshControl];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(menuDidHide:) name:UIMenuControllerDidHideMenuNotification object:nil];
     }
@@ -64,6 +70,8 @@
 
 - (void)layoutAfterRefresh
 {
+    [self.refreshControl endRefreshing];
+    
     CGFloat offset  = self.tableView.contentSize.height - self.tableView.contentOffset.y;
     [self.tableView reloadData];
     CGFloat offsetYAfterLoad = self.tableView.contentSize.height - offset;
@@ -74,8 +82,12 @@
 
 - (void)changeLayout:(CGFloat)inputViewHeight
 {
-    _inputViewHeight = inputViewHeight;
-    [self adjustTableView];
+    BOOL change = _inputViewHeight != inputViewHeight;
+    if (change)
+    {
+        _inputViewHeight = inputViewHeight;
+        [self adjustTableView];
+    }
 }
 
 - (void)adjustTableView
@@ -86,6 +98,7 @@
     [_tableView setFrame:rect];
     [_tableView nim_scrollToBottom:NO];
 }
+
 
 #pragma mark - Notification
 - (void)menuDidHide:(NSNotification *)notification
@@ -99,6 +112,22 @@
     [model calculateContent:self.tableView.frame.size.width
                       force:NO];
 }
+
+- (void)setupRefreshControl
+{
+    self.refreshControl = [[UIRefreshControl alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
+    [self.tableView addSubview:_refreshControl];
+    [self.refreshControl addTarget:self action:@selector(headerRereshing:) forControlEvents:UIControlEventValueChanged];
+}
+
+- (void)headerRereshing:(id)sender
+{
+    if ([self.delegate respondsToSelector:@selector(onRefresh)])
+    {
+        [self.delegate onRefresh];
+    }
+}
+
 
 
 - (void)insert:(NSArray<NSIndexPath *> *)indexPaths animated:(BOOL)animated

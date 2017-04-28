@@ -28,7 +28,6 @@
 @interface NIMInputView()<NIMInputToolBarDelegate,NIMInputEmoticonProtocol,NIMContactSelectDelegate>
 {
     UIView  *_emoticonView;
-    NIMInputType  _inputType;
 }
 
 @property (nonatomic, strong) NIMInputAudioRecordIndicatorView *audioRecordIndicator;
@@ -101,7 +100,7 @@
 - (void)refreshStatus:(NIMInputStatus)status
 {
     self.status = status;
-    [self.toolBar update:_inputType];
+    [self.toolBar update:status];
     switch (status) {
         case NIMInputStatusText:
         case NIMInputStatusAudio:{
@@ -193,7 +192,6 @@
         NSInteger textInputLength = [NIMKitUIConfig sharedConfig].globalConfig.maxLength;
         self.maxTextLength = textInputLength;
         
-        _inputType = InputTypeText;
         [self refreshStatus:NIMInputStatusText];
         [self sizeToFit];
         [self callDidChangeHeight];
@@ -323,13 +321,12 @@
 #pragma mark - button actions
 - (void)onTouchVoiceBtn:(id)sender {
     // image change
-    if (_inputType!= InputTypeAudio) {
+    if (self.status!= NIMInputStatusAudio) {
         __weak typeof(self) weakSelf = self;
         if ([[AVAudioSession sharedInstance] respondsToSelector:@selector(requestRecordPermission:)]) {
             [[AVAudioSession sharedInstance] performSelector:@selector(requestRecordPermission:) withObject:^(BOOL granted) {
                 if (granted) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        _inputType = InputTypeAudio;
                         if (weakSelf.toolBar.showsKeyboard) {
                             weakSelf.status = NIMInputStatusAudio;
                             weakSelf.toolBar.showsKeyboard = NO;
@@ -354,7 +351,6 @@
     else
     {
         if ([self.toolBar.inputBarItemTypes containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
-            _inputType = InputTypeText;
             self.status = NIMInputStatusText;
             self.toolBar.showsKeyboard = YES;
         }
@@ -385,8 +381,7 @@
 
 - (void)onTouchEmoticonBtn:(id)sender
 {
-    if (_inputType != InputTypeEmot) {
-        _inputType = InputTypeEmot;
+    if (self.status != NIMInputStatusEmoticon) {
         [self bringSubviewToFront:_emoticonContainer];
         [self.emoticonContainer setHidden:NO];
         [self.moreContainer setHidden:YES];
@@ -403,16 +398,14 @@
     }
     else
     {
-        _inputType = InputTypeText;
         self.status = NIMInputStatusText;
         self.toolBar.showsKeyboard = YES;
     }
 }
 
 - (void)onTouchMoreBtn:(id)sender {
-    if (_inputType != InputTypeMedia)
+    if (self.status != NIMInputStatusMore)
     {
-        _inputType = InputTypeMedia;
         [self bringSubviewToFront:self.moreContainer];
         [self.moreContainer setHidden:NO];
         [self.emoticonContainer setHidden:YES];
@@ -428,7 +421,6 @@
     }
     else
     {
-        _inputType = InputTypeText;
         self.status = NIMInputStatusText;
         self.toolBar.showsKeyboard = YES;
     }
@@ -456,7 +448,6 @@
 
 - (BOOL)textViewShouldBeginEditing
 {
-    _inputType = InputTypeText;
     self.status = NIMInputStatusText;
     return YES;
 }

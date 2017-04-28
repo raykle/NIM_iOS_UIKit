@@ -19,6 +19,8 @@
 
 @interface NIMContactDataCell : UITableViewCell
 
+@property (nonatomic,copy) NSString *memberId;
+
 @property (nonatomic,strong) NIMAvatarImageView * avatarImageView;
 
 @property (nonatomic,strong) UIButton *accessoryBtn;

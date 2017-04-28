@@ -22,7 +22,7 @@
 
 @property (nonatomic,strong) NIMGrowingTextView *inputTextView;
 
-@property (nonatomic,assign) NIMInputType inputType;
+@property (nonatomic,assign) NIMInputStatus status;
 
 @end
 
@@ -53,6 +53,7 @@
         [_recordButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [_recordButton.titleLabel setFont:[UIFont systemFontOfSize:14.f]];
         [_recordButton setBackgroundImage:[[UIImage nim_imageInKit:@"icon_input_text_bg"] resizableImageWithCapInsets:UIEdgeInsetsMake(15,80,15,80) resizingMode:UIImageResizingModeStretch] forState:UIControlStateNormal];
+        _recordButton.exclusiveTouch = YES;
         [_recordButton sizeToFit];
         
         _inputTextBkgImage = [[UIImageView alloc] initWithFrame:CGRectZero];
@@ -108,7 +109,7 @@
 - (CGSize)sizeThatFits:(CGSize)size
 {
     CGFloat viewHeight = 0.0f;
-    if (self.inputType == InputTypeAudio) {
+    if (self.status == NIMInputStatusAudio) {
         viewHeight = 54.5;
     }else{
         //算出 TextView 的宽度
@@ -148,7 +149,11 @@
     CGFloat left = 0;
     for (NSNumber *type in self.types) {
         UIView *view  = [self subViewForType:type.integerValue];
-        [self addSubview:view];
+        if (!view.superview)
+        {
+            [self addSubview:view];
+        }
+        
         view.nim_left = left + self.spacing;
         view.nim_centerY = self.nim_height * .5f;
         left = view.nim_right;
@@ -163,15 +168,23 @@
 }
 
 
-- (void)adjustTextAndRecordView{
-    if ([self.types containsObject:@(NIMInputBarItemTypeTextAndRecord)]) {
-        //输入框
+- (void)adjustTextAndRecordView
+{
+    if ([self.types containsObject:@(NIMInputBarItemTypeTextAndRecord)])
+    {
         self.inputTextView.center  = self.inputTextBkgImage.center;
-        //中间点击录音按钮
-        self.recordButton.frame    = self.inputTextBkgImage.frame;
         
-        [self addSubview:self.inputTextView];
-        [self addSubview:self.recordButton];
+        if (!self.inputTextView.superview)
+        {
+            //输入框
+            [self addSubview:self.inputTextView];
+        }
+        if (!self.recordButton.superview)
+        {
+            //中间点击录音按钮
+            self.recordButton.frame    = self.inputTextBkgImage.frame;
+            [self addSubview:self.recordButton];
+        }
     }
 }
 
@@ -194,12 +207,12 @@
 }
 
 
-- (void)update:(NIMInputType)inputType
+- (void)update:(NIMInputStatus)status
 {
-    self.inputType = inputType;
+    self.status = status;
     [self sizeToFit];
     
-    if (inputType == InputTypeText || inputType == InputTypeMedia)
+    if (status == NIMInputStatusText || status == NIMInputStatusMore)
     {
         [self.recordButton setHidden:YES];
         [self.inputTextView setHidden:NO];
@@ -207,7 +220,7 @@
         [self updateVoiceBtnImages:YES];
         [self updateEmotAndTextBtnImages:YES];
     }
-    else if(inputType == InputTypeAudio)
+    else if(status == NIMInputStatusAudio)
     {
         [self.recordButton setHidden:NO];
         [self.inputTextView setHidden:YES];

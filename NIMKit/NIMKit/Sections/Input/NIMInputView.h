@@ -23,13 +23,7 @@ typedef NS_ENUM(NSInteger, NIMAudioRecordPhase) {
     AudioRecordPhaseEnd
 };
 
-typedef NS_ENUM(NSInteger,NIMInputStatus)
-{
-    NIMInputStatusText,
-    NIMInputStatusAudio,
-    NIMInputStatusEmoticon,
-    NIMInputStatusMore
-};
+
 
 
 

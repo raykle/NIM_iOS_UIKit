@@ -24,6 +24,10 @@
 
 @property (nonatomic,readwrite) NIMMessage *messageForMenu;
 
+@property (nonatomic,strong)    UILabel *titleLabel;
+
+@property (nonatomic,strong)    UILabel *subTitleLabel;
+
 @property (nonatomic,strong)    NSIndexPath *lastVisibleIndexPathBeforeRotation;
 
 @property (nonatomic,strong)  NIMSessionConfigurator *configurator;
@@ -58,8 +62,6 @@
     [self setupTableView];
     //输入框 inputView
     [self setupInputView];
-    //下拉刷新 refreshControl
-    [self setupRefreshControl];
     //会话相关逻辑配置器安装
     [self setupConfigurator];
     //添加监听
@@ -72,7 +74,7 @@
 
 - (void)setupNav
 {
-    self.navigationItem.title = [self sessionTitle];
+    [self setUpTitleView];
     NIMCustomLeftBarView *leftBarView = [[NIMCustomLeftBarView alloc] init];
     UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] initWithCustomView:leftBarView];
     self.navigationItem.leftBarButtonItem = leftItem;
@@ -109,12 +111,6 @@
     }
 }
 
-- (void)setupRefreshControl
-{
-    self.refreshControl = [[UIRefreshControl alloc] initWithFrame:CGRectMake(0, 0, 20, 20)];
-    [self.tableView addSubview:_refreshControl];
-    [self.refreshControl addTarget:self action:@selector(headerRereshing:) forControlEvents:UIControlEventValueChanged];
-}
 
 - (void)setupConfigurator
 {
@@ -147,16 +143,7 @@
     [self.interactor resetLayout];
 }
 
-- (void)headerRereshing:(id)sender
-{
-    __weak typeof(self) wself = self;
-    [self.interactor loadMessages:^(NSArray *messages, NSError *error) {
-        [wself.refreshControl endRefreshing];
-        if (messages.count) {
-            [wself uiCheckReceipt];
-        }
-    }];
-}
+
 
 #pragma mark - 消息收发接口
 - (void)sendMessage:(NIMMessage *)message
@@ -184,7 +171,8 @@
 
 - (void)didRefreshMessageData
 {
-    self.navigationItem.title = [self sessionTitle];
+    [self refreshSessionTitle:self.sessionTitle];
+    [self refreshSessionSubTitle:self.sessionSubTitle];
     [self.tableView reloadData];
 }
 
@@ -208,6 +196,8 @@
     }
     return title;
 }
+
+- (NSString *)sessionSubTitle{return @"";};
 
 #pragma mark - NIMChatManagerDelegate
 
@@ -426,9 +416,9 @@
     
     NSTimeInterval duration = [NIMKitUIConfig sharedConfig].globalConfig.recordMaxDuration;
     
-    [[[NIMSDK sharedSDK] mediaManager] addDelegate:self];
+    [[NIMSDK sharedSDK].mediaManager addDelegate:self];
     
-    [[[NIMSDK sharedSDK] mediaManager] record:type
+    [[NIMSDK sharedSDK].mediaManager record:type
                                      duration:duration];
 }
 
@@ -649,9 +639,7 @@
 
 - (BOOL)shouldHandleReceipt
 {
-    return self.session.sessionType == NIMSessionTypeP2P &&
-    [self.sessionConfig respondsToSelector:@selector(shouldHandleReceipt)] &&
-    [self.sessionConfig shouldHandleReceipt];
+    return [self.interactor shouldHandleReceipt];
 }
 
 
@@ -671,6 +659,64 @@
         default:
             return [NIMSDK sharedSDK].conversationManager;
     }
+}
+
+
+- (void)setUpTitleView
+{
+    self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.titleLabel.font = [UIFont boldSystemFontOfSize:15.f];
+    self.titleLabel.text = self.sessionTitle;
+ 
+    self.titleLabel.textAlignment = NSTextAlignmentCenter;
+    
+    self.subTitleLabel  = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.subTitleLabel.textColor = [UIColor grayColor];
+    self.subTitleLabel.font = [UIFont systemFontOfSize:12.f];
+    self.subTitleLabel.text = self.sessionSubTitle;
+    self.subTitleLabel.textAlignment = NSTextAlignmentCenter;
+    
+    UIView *titleView = [[UIView alloc] init];
+    [titleView addSubview:self.titleLabel];
+    [titleView addSubview:self.subTitleLabel];
+    
+    self.navigationItem.titleView = titleView;
+    
+    [self layoutTitleView];
+    
+}
+
+- (void)layoutTitleView
+{
+    CGFloat maxLabelWidth = 150.f;
+    [self.titleLabel sizeToFit];
+    self.titleLabel.nim_width = maxLabelWidth;
+    
+    [self.subTitleLabel sizeToFit];
+    self.subTitleLabel.nim_width = maxLabelWidth;
+    
+    
+    UIView *titleView = self.navigationItem.titleView;
+    
+    titleView.nim_width  = MAX(self.titleLabel.nim_width, self.subTitleLabel.nim_width);
+    titleView.nim_height = self.titleLabel.nim_height + self.subTitleLabel.nim_height;
+    
+    self.subTitleLabel.nim_bottom  = titleView.nim_height;
+}
+
+
+
+- (void)refreshSessionTitle:(NSString *)title
+{
+    self.titleLabel.text = title;
+    [self layoutTitleView];
+}
+
+
+- (void)refreshSessionSubTitle:(NSString *)title
+{
+    self.subTitleLabel.text = title;
+    [self layoutTitleView];
 }
 
 

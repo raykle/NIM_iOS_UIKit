@@ -13,8 +13,6 @@
 
 @interface NIMContactDataCell()
 
-@property (nonatomic,copy) NSString *memberId;
-
 @end
 
 @implementation NIMContactDataCell

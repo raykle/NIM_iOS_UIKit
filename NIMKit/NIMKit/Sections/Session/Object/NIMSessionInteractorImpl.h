@@ -10,7 +10,7 @@
 #import "NIMSessionPrivateProtocol.h"
 #import "NIMSessionConfigurateProtocol.h"
 
-@interface NIMSessionInteractorImpl : NSObject<NIMSessionInteractor>
+@interface NIMSessionInteractorImpl : NSObject<NIMSessionInteractor,NIMSessionLayoutDelegate>
 
 - (instancetype)initWithSession:(NIMSession *)session
                          config:(id<NIMSessionConfig>)sessionConfig;

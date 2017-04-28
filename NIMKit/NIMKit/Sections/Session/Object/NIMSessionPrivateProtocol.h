@@ -54,6 +54,13 @@
 
 @end
 
+
+@protocol NIMSessionLayoutDelegate <NSObject>
+
+- (void)onRefresh;
+
+@end
+
 @protocol NIMSessionLayout <NSObject>
 
 - (void)update:(NSIndexPath *)indexPath;
@@ -72,9 +79,14 @@
 
 - (void)changeLayout:(CGFloat)inputViewHeight;
 
+- (void)setDelegate:(id<NIMSessionLayoutDelegate>)delegate;
+
 - (void)layoutAfterRefresh;
 
 @end
+
+
+
 
 
 @interface NIMSessionViewController(Interactor)

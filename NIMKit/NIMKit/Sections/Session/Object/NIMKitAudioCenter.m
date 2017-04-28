@@ -11,6 +11,8 @@
 
 @interface NIMKitAudioCenter()<NIMMediaManagerDelegate>
 
+@property (nonatomic,assign) NSInteger retryCount;
+
 @end
 
 @implementation NIMKitAudioCenter
@@ -31,8 +33,14 @@
     self = [super init];
     if (self) {
         [[NIMSDK sharedSDK].mediaManager addDelegate:self];
+        [self resetRetryCount];
     }
     return self;
+}
+
+- (void)resetRetryCount
+{
+    _retryCount = 3;
 }
 
 - (void)play:(NIMMessage *)message
@@ -51,8 +59,25 @@
 
 - (void)playAudio:(NSString *)filePath didBeganWithError:(NSError *)error
 {
-    if (error) {
-        self.currentPlayingMessage = nil;
+    if (error)
+    {
+        if (_retryCount > 0)
+        {
+            // iPhone4 和 iPhone 4S 上连播会由于设备释放过慢导致 AudioQueue 启动不了的问题，这里做个延迟重试，最多重试 3 次 ( code -66681 )
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [[NIMSDK sharedSDK].mediaManager play:filePath];
+            });
+        }
+        else
+        {
+            self.currentPlayingMessage = nil;
+            [self resetRetryCount];
+        }
+        
+    }
+    else
+    {
+        [self resetRetryCount];
     }
 }
 

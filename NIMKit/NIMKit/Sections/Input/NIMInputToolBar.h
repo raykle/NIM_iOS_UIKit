@@ -8,12 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
-typedef NS_ENUM(NSInteger, NIMInputType){
-    InputTypeText = 1,
-    InputTypeEmot = 2,
-    InputTypeAudio = 3,
-    InputTypeMedia = 4,
+typedef NS_ENUM(NSInteger,NIMInputStatus)
+{
+    NIMInputStatusText,
+    NIMInputStatusAudio,
+    NIMInputStatusEmoticon,
+    NIMInputStatusMore
 };
+
 
 @protocol NIMInputToolBarDelegate <NSObject>
 
@@ -54,7 +56,7 @@ typedef NS_ENUM(NSInteger, NIMInputType){
 
 @property (nonatomic,assign) NSArray *inputBarItemTypes;
 
-- (void)update:(NIMInputType)inputType;
+- (void)update:(NIMInputStatus)status;
 
 @end
 

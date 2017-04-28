@@ -18,7 +18,9 @@ extern NSString *const NIMKitUserInfoHasUpdatedNotification;
 extern NSString *const NIMKitTeamInfoHasUpdatedNotification;
 
 
-@interface NIMKit()
+@interface NIMKit(){
+    NSRegularExpression *_urlRegex;
+}
 @property (nonatomic,strong)    NIMKitNotificationFirer *firer;
 @property (nonatomic,strong)    id<NIMCellLayoutConfig> layoutConfig;
 @end
@@ -143,6 +145,7 @@ extern NSString *const NIMKitTeamInfoHasUpdatedNotification;
     return info;
 
 }
+
 
 @end
 

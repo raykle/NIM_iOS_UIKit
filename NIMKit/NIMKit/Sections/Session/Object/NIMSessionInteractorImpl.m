@@ -178,6 +178,13 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
     }
 }
 
+- (BOOL)shouldHandleReceipt
+{
+    return self.session.sessionType == NIMSessionTypeP2P &&
+    [self.sessionConfig respondsToSelector:@selector(shouldHandleReceipt)] &&
+    [self.sessionConfig shouldHandleReceipt];
+}
+
 - (void)markAllMessagesRead
 {
     [[NIMSDK sharedSDK].conversationManager markAllMessagesReadInSession:self.session];
@@ -213,12 +220,12 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
 {
     __weak typeof(self) wself = self;
     [self.dataSource loadHistoryMessagesWithComplete:^(NSInteger index, NSArray *messages, NSError *error) {
-        if (handler) {
-            handler(messages,error);
-        }
         if (messages.count) {
             [wself.layout layoutAfterRefresh];
             [wself.dataSource checkAttachmentState:messages];
+        }
+        if (handler) {
+            handler(messages,error);
         }
     }];
 }
@@ -393,6 +400,19 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
 }
 
 
+#pragma mark - NIMSessionLayoutDelegate
+- (void)onRefresh
+{
+    __weak typeof(self) wself = self;
+    [self loadMessages:^(NSArray *messages, NSError *error) {
+        [wself.layout layoutAfterRefresh];
+        if ([wself shouldHandleReceipt] && messages.count) {
+            [wself checkReceipt];
+        }
+    }];
+
+}
+
 #pragma mark - NIMMediaManagerDelegate
 
 - (void)playAudio:(NSString *)filePath didCompletedWithError:(nullable NSError *)error
@@ -473,6 +493,7 @@ dispatch_queue_t NTESMessageDataPrepareQueue()
     }];
     return messages;
 }
+
 
 - (void)processChatroomMessageModels
 {

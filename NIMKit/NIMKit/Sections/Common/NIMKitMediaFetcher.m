@@ -10,7 +10,6 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "NIMKitFileLocationHelper.h"
 #import "NIMMessageMaker.h"
-#import "SVProgressHUD.h"
 #import "NIMGlobalMacro.h"
 #import "TZImagePickerController.h"
 #import "TZImageManager.h"
